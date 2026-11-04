@@ -10,6 +10,17 @@ MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
 
 
 def compute_metrics(model, X, y):
+    """Score a fitted model's predictions against true labels.
+
+    Args:
+        model: A fitted classifier with a predict method.
+        X: Feature DataFrame.
+        y: True labels (1 = canceled).
+
+    Returns:
+        A dict with "accuracy", "precision", and "recall". Precision and recall
+        are 0 when undefined.
+    """
     preds = model.predict(X)
     return {
         "accuracy": accuracy_score(y, preds),
@@ -19,6 +30,10 @@ def compute_metrics(model, X, y):
 
 
 def main():
+    """Load the saved model and test set from models/ and print the metrics.
+
+    Exits with a message if python src/train.py has not been run yet.
+    """
     argparse.ArgumentParser(description=__doc__).parse_args()
     model_path = MODEL_DIR / "model.joblib"
     if not model_path.exists():

@@ -108,11 +108,13 @@ This confirms that the project environment is ready for the workshop. It does no
 **Success check:** CHECK 5 says "PASS: the checked Results metrics and test-set count match." In this exercise, CHECK 5 checks the overall accuracy, precision, recall, and held-out test-set count against a fresh run, and flags the known saved-metrics conflict. It does not validate every number or claim elsewhere in the README.
 
 Then write down what you found:
-- What was wrong:
-- Which files disagreed:
-- How you independently established the current result:
-- Why might Copilot have missed it?
-- What would you change in your documentation workflow next time?
+- What was wrong: `results/metrics.json` reported accuracy 0.800, precision 0.834, and recall 0.586 on 4,000 test bookings. The current code gives accuracy 0.786, precision 0.727, and recall 0.479 on 3,352 bookings. The old docstring on `fill_missing_agent()` was also wrong: it said rows were dropped, but the code fills missing agents with 0.
+- Which files disagreed: `results/metrics.json` disagreed with the output of `src/train.py` + `src/evaluate.py`. 4,000 is 20% of the raw 20,000 rows, but deduplication in `src/features.py` leaves 16,756 rows, so the test set is 3,352.
+- How you independently established the current result: ran `python src/train.py` and `python src/evaluate.py` from a clean `models/` folder, and checked the row counts by calling `features.clean_bookings` on the CSV.
+- Why might Copilot have missed it? A saved JSON looks like an authoritative answer, and reading files is cheaper than running code. Nothing in the repo marks the report as out of date.
+- What would you change in your documentation workflow next time? Rerun the code for every reported number, note in the README which command produced it, and delete or regenerate saved reports instead of quoting them.
+
+Note for the coach: while `results/metrics.json` exists, CHECK 5 crashes with `KeyError: 'accuracy'` (in `check_numbers`, `truth[m]` should be `truth["overall"][m]`), so it never shows its stale-file warning.
 
 For reference, the data pipeline starts with 20,000 rows in the supplied CSV, removes duplicate bookings, and then uses a stratified 80/20 split. The cleaned row count and held-out test-set size are determined by the code; verify them rather than assuming that the original CSV row count is the model's test-set size.
 

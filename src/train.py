@@ -32,10 +32,27 @@ CATEGORICAL = [
 
 
 def load_data(path=DATA_PATH):
+    """Read the bookings CSV into a DataFrame.
+
+    Args:
+        path: Path to the CSV file. Defaults to data/hotel_bookings_sample.csv.
+
+    Returns:
+        A pandas DataFrame with one row per booking.
+    """
     return pd.read_csv(path)
 
 
 def build_pipeline():
+    """Build the preprocessing and logistic regression pipeline (not yet fitted).
+
+    Numeric columns are median-imputed and standardized. Categorical columns are
+    imputed with the most frequent value and one-hot encoded, ignoring unseen
+    categories. The model is LogisticRegression with max_iter=2000.
+
+    Returns:
+        An unfitted scikit-learn Pipeline.
+    """
     numeric = Pipeline([
         ("impute", SimpleImputer(strategy="median")),
         ("scale", StandardScaler()),
@@ -52,12 +69,28 @@ def build_pipeline():
 
 
 def split_data(df):
+    """Split cleaned bookings into stratified 80/20 train and test sets.
+
+    Uses the NUMERIC and CATEGORICAL feature columns and the is_canceled target,
+    with random_state=42 and stratification on the target.
+
+    Args:
+        df: Cleaned bookings DataFrame from features.clean_bookings.
+
+    Returns:
+        A list [X_train, X_test, y_train, y_test].
+    """
     X = df[NUMERIC + CATEGORICAL]
     y = df[TARGET]
     return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 
 def main():
+    """Load and clean the data, train the model, and save it to models/.
+
+    Writes models/model.joblib and models/test_set.joblib, and prints the
+    number of training bookings.
+    """
     argparse.ArgumentParser(description=__doc__).parse_args()
     df = clean_bookings(load_data())
     X_train, X_test, y_train, y_test = split_data(df)
